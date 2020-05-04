@@ -1,7 +1,11 @@
 package com.wise.config;
 
+import com.wise.action.ErrorAction;
+import com.wise.action.MachineAuditAction;
+import com.wise.action.MachineAuditPassedAction;
 import com.wise.enums.Events;
 import com.wise.enums.States;
+import com.wise.guard.MachineAuditGuard;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.statemachine.config.EnableStateMachine;
@@ -25,7 +29,8 @@ public class StateMachineConfig
     public void configure(StateMachineConfigurationConfigurer<States, Events> config)
             throws Exception {
         config
-            .withConfiguration()
+            .withConfiguration().stateDoActionPolicy()
+                // 是否自动启动初始状态
                 .autoStartup(true)
                 .listener(listener());
     }
@@ -35,8 +40,10 @@ public class StateMachineConfig
             throws Exception {
         states
             .withStates()
-                .initial(States.SI)
-                .end(States.SF)
+                .initial(States.PENDING)
+                .choice(States.MACHINE_AUDIT)
+                .choice(States.MANUAL_AUDIT)
+                .end(States.DESTROY)
                     .states(EnumSet.allOf(States.class));
     }
 
@@ -45,17 +52,21 @@ public class StateMachineConfig
             throws Exception {
         transitions
             .withExternal()
-                .source(States.SI).target(States.S1).event(Events.E1)
+                .source(States.PENDING).target(States.MACHINE_AUDIT).event(Events.MACHINE_AUDIT)
+                .action(new MachineAuditAction(), new ErrorAction())
                 // 若 guard 的 evaluate 返回 true 才会执行过渡
                 .guard(guard())
-                .and()
-            .withExternal()
-                .source(States.S1).target(States.S2).event(Events.E2)
                 // 支持 SpEL 表达式
-                .guardExpression("true")
+                // .guardExpression("true")
                 .and()
+//            .withExternal()
+//                .source(States.MACHINE_AUDIT)
+//                .first(States.MACHINE_AUDIT_PASSED, new MachineAuditGuard(), new MachineAuditPassedAction())
+//                .last(ComplexFormStates.DEAL_FORM,new ComplexFormChoiceAction())
+//                .source(States.MACHINE_AUDIT).target(States.S2).event(Events.E2)
+//                .and()
             .withExternal()
-                .source(States.S2).target(States.SF).event(Events.EF);
+                .source(States.DOWN).target(States.DESTROY).event(Events.DELETE_CONTENT);
     }
 
     @Bean

@@ -1,5 +1,18 @@
 package com.wise.enums;
 
 public enum Events {
-    E1, E2, EF
+
+    /** 机审 */
+    MACHINE_AUDIT(),
+
+    /** 人工审核 */
+    MANUAL_AUDIT(),
+
+    /** 上架 */
+    UP(),
+
+    /** 删除内容 */
+    DELETE_CONTENT(),
+    ;
+
 }
