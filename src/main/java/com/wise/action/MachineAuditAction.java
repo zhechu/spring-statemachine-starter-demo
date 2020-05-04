@@ -22,6 +22,12 @@ public class MachineAuditAction implements Action<States, Events> {
 		AuditContent auditContent = context.getMessage().getHeaders().get("audtiContent", AuditContent.class);
 
 		log.info("机审参数:{}", auditContent);
+
+		try {
+			Thread.sleep(3000);
+		} catch (InterruptedException e) {}
+
+		throw new RuntimeException("测试运行时异常");
 	}
 
 }

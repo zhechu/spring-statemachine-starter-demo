@@ -20,6 +20,8 @@ public class ErrorAction implements Action<States, Events> {
 	public void execute(StateContext<States, Events> context) {
 		log.info("源状态:{}, 目标状态:{}, 事件:{}, 错误:{}",
 				context.getSource(), context.getTarget(), context.getEvent(), context.getException().getMessage());
+		context.getExtendedState().getVariables().put("hasError", true);
+		context.getExtendedState().getVariables().put("error", context.getException());
 	}
 
 }

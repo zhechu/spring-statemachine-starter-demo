@@ -2,10 +2,8 @@ package com.wise.config;
 
 import com.wise.action.ErrorAction;
 import com.wise.action.MachineAuditAction;
-import com.wise.action.MachineAuditPassedAction;
 import com.wise.enums.Events;
 import com.wise.enums.States;
-import com.wise.guard.MachineAuditGuard;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.statemachine.config.EnableStateMachine;
@@ -29,7 +27,7 @@ public class StateMachineConfig
     public void configure(StateMachineConfigurationConfigurer<States, Events> config)
             throws Exception {
         config
-            .withConfiguration().stateDoActionPolicy()
+            .withConfiguration()
                 // 是否自动启动初始状态
                 .autoStartup(true)
                 .listener(listener());
@@ -41,8 +39,8 @@ public class StateMachineConfig
         states
             .withStates()
                 .initial(States.PENDING)
-                .choice(States.MACHINE_AUDIT)
-                .choice(States.MANUAL_AUDIT)
+//                .choice(States.MACHINE_AUDIT)
+//                .choice(States.MANUAL_AUDIT)
                 .end(States.DESTROY)
                     .states(EnumSet.allOf(States.class));
     }
@@ -59,14 +57,19 @@ public class StateMachineConfig
                 // 支持 SpEL 表达式
                 // .guardExpression("true")
                 .and()
+            .withExternal()
+                .source(States.MACHINE_AUDIT).target(States.UP).event(Events.UP)
+                .and()
+            .withExternal()
+                .source(States.UP).target(States.DESTROY).event(Events.DELETE_CONTENT);
 //            .withExternal()
 //                .source(States.MACHINE_AUDIT)
 //                .first(States.MACHINE_AUDIT_PASSED, new MachineAuditGuard(), new MachineAuditPassedAction())
 //                .last(ComplexFormStates.DEAL_FORM,new ComplexFormChoiceAction())
 //                .source(States.MACHINE_AUDIT).target(States.S2).event(Events.E2)
 //                .and()
-            .withExternal()
-                .source(States.DOWN).target(States.DESTROY).event(Events.DELETE_CONTENT);
+//            .withExternal()
+//                .source(States.DOWN).target(States.DESTROY).event(Events.DELETE_CONTENT);
     }
 
     @Bean
