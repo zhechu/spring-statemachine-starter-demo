@@ -18,4 +18,10 @@ public class AuditContent {
     /** 文本内容 */
     private String textContent;
 
+    /** 机审结果 */
+    private Boolean machineAuditResult;
+
+    /** 人工审核结果 */
+    private Boolean manualAuditResult;
+
 }

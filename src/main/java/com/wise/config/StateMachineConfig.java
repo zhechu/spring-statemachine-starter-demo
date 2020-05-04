@@ -1,9 +1,10 @@
 package com.wise.config;
 
-import com.wise.action.ErrorAction;
-import com.wise.action.MachineAuditAction;
+import com.wise.action.*;
 import com.wise.enums.Events;
 import com.wise.enums.States;
+import com.wise.guard.MachineAuditGuard;
+import com.wise.guard.ManualAuditGuard;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.statemachine.config.EnableStateMachine;
@@ -39,8 +40,8 @@ public class StateMachineConfig
         states
             .withStates()
                 .initial(States.PENDING)
-//                .choice(States.MACHINE_AUDIT)
-//                .choice(States.MANUAL_AUDIT)
+                .choice(States.MACHINE_AUDIT)
+                .choice(States.MANUAL_AUDIT)
                 .end(States.DESTROY)
                     .states(EnumSet.allOf(States.class));
     }
@@ -57,19 +58,37 @@ public class StateMachineConfig
                 // 支持 SpEL 表达式
                 // .guardExpression("true")
                 .and()
-            .withExternal()
-                .source(States.MACHINE_AUDIT).target(States.UP).event(Events.UP)
+            .withChoice()
+                .source(States.MACHINE_AUDIT)
+                .first(States.MACHINE_AUDIT_PASSED, new MachineAuditGuard(), new MachineAuditPassedAction(), new ErrorAction())
+                .last(States.MACHINE_AUDIT_REFUSED, new MachineAuditRefusedAction(), new ErrorAction())
                 .and()
             .withExternal()
-                .source(States.UP).target(States.DESTROY).event(Events.DELETE_CONTENT);
-//            .withExternal()
-//                .source(States.MACHINE_AUDIT)
-//                .first(States.MACHINE_AUDIT_PASSED, new MachineAuditGuard(), new MachineAuditPassedAction())
-//                .last(ComplexFormStates.DEAL_FORM,new ComplexFormChoiceAction())
-//                .source(States.MACHINE_AUDIT).target(States.S2).event(Events.E2)
-//                .and()
-//            .withExternal()
-//                .source(States.DOWN).target(States.DESTROY).event(Events.DELETE_CONTENT);
+                .source(States.MACHINE_AUDIT_PASSED).target(States.MANUAL_AUDIT).event(Events.MANUAL_AUDIT)
+                .action(new ManualAuditAction(), new ErrorAction())
+                .and()
+            .withChoice()
+                .source(States.MANUAL_AUDIT)
+                .first(States.MANUAL_AUDIT_PASSED, new ManualAuditGuard(), new ManualAuditPassedAction(), new ErrorAction())
+                .last(States.MANUAL_AUDIT_REFUSED, new ManualAuditRefusedAction(), new ErrorAction())
+                .and()
+            .withExternal()
+                .source(States.MANUAL_AUDIT_PASSED).target(States.UP).event(Events.UP)
+                .and()
+            .withExternal()
+                .source(States.UP).target(States.DOWN).event(Events.DOWN)
+                .and()
+            .withExternal()
+                .source(States.DOWN).target(States.DESTROY).event(Events.DELETE_CONTENT)
+                .and()
+            .withExternal()
+                .source(States.MANUAL_AUDIT_REFUSED).target(States.DESTROY).event(Events.DELETE_CONTENT)
+                .and()
+            .withExternal()
+                .source(States.MACHINE_AUDIT_REFUSED).target(States.DESTROY).event(Events.DELETE_CONTENT)
+                .and()
+            .withExternal()
+                .source(States.DOWN).target(States.DESTROY).event(Events.DELETE_CONTENT);
     }
 
     @Bean

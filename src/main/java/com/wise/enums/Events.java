@@ -6,10 +6,13 @@ public enum Events {
     MACHINE_AUDIT(),
 
     /** 人工审核 */
-//    MANUAL_AUDIT(),
+    MANUAL_AUDIT(),
 
     /** 上架 */
     UP(),
+
+    /** 下架 */
+    DOWN(),
 
     /** 删除内容 */
     DELETE_CONTENT(),
