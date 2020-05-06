@@ -21,6 +21,9 @@ import java.util.EnumSet;
 public class ContentAuditStateMachineBuilder {
 
 	@Autowired
+	private MachineAuditAction machineAuditAction;
+
+	@Autowired
 	private ErrorAction errorAction;
 
 	@Autowired
@@ -47,7 +50,7 @@ public class ContentAuditStateMachineBuilder {
 		builder.configureTransitions()
 				.withExternal()
 					.source(States.PENDING).target(States.MACHINE_AUDIT).event(Events.MACHINE_AUDIT)
-					.action(new MachineAuditAction(), errorAction)
+					.action(machineAuditAction, errorAction)
 					// 若 guard 的 evaluate 返回 true 才会执行过渡
 					.guard(guard())
 					// 支持 SpEL 表达式

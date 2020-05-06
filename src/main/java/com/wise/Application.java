@@ -107,7 +107,12 @@ public class Application implements CommandLineRunner {
 
         // 异常处理
         if (stateMachine.getExtendedState().getVariables().containsKey("hasError")) {
-            throw (RuntimeException)stateMachine.getExtendedState().getVariables().get("error");
+            log.error("第一次异常", (RuntimeException)stateMachine.getExtendedState().getVariables().get("error"));
+//            throw (RuntimeException)stateMachine.getExtendedState().getVariables().get("error");
+
+            // 重置变量
+            stateMachine.getExtendedState().getVariables().remove("hasError");
+            stateMachine.getExtendedState().getVariables().remove("error");
         }
 
         log.info("机审后状态:{}", stateMachine.getState());
@@ -132,6 +137,12 @@ public class Application implements CommandLineRunner {
         message = MessageBuilder.withPayload(Events.MANUAL_AUDIT)
                 .setHeader("auditContent", auditContent).build();
         stateMachine.sendEvent(message);
+
+        // 异常处理
+        if (stateMachine.getExtendedState().getVariables().containsKey("hasError")) {
+            log.error("第二次异常", (RuntimeException)stateMachine.getExtendedState().getVariables().get("error"));
+//            throw (RuntimeException)stateMachine.getExtendedState().getVariables().get("error");
+        }
 
         log.info("人工审核后状态:{}", stateMachine.getState());
 

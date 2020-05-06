@@ -7,6 +7,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.statemachine.StateContext;
 import org.springframework.statemachine.action.Action;
+import org.springframework.stereotype.Component;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 机审处理
@@ -15,8 +18,11 @@ import org.springframework.statemachine.action.Action;
  * @date 2020-05-04 0:01
  * @since 1.0.9
  */
+@Component
 @Slf4j
 public class MachineAuditAction implements Action<States, Events> {
+
+	private AtomicInteger atomicInteger = new AtomicInteger(0);
 
 	@Override
 	public void execute(StateContext<States, Events> context) {
@@ -33,11 +39,13 @@ public class MachineAuditAction implements Action<States, Events> {
 			auditContent.setMachineAuditResult(true);
 		}
 
-//		try {
-//			Thread.sleep(3000);
-//		} catch (InterruptedException e) {}
+		try {
+			Thread.sleep(3000);
+		} catch (InterruptedException e) {}
 
-//		throw new RuntimeException("测试运行时异常");
+		if (atomicInteger.getAndIncrement() % 2 == 0) {
+			throw new RuntimeException("测试运行时异常");
+		}
 	}
 
 }
