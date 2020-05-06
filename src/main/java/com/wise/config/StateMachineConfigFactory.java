@@ -5,7 +5,9 @@ import com.wise.enums.Events;
 import com.wise.enums.States;
 import com.wise.guard.MachineAuditGuard;
 import com.wise.guard.ManualAuditGuard;
-import org.springframework.context.annotation.Bean;
+import com.wise.listener.LogListener;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.statemachine.config.EnableStateMachineFactory;
 import org.springframework.statemachine.config.EnumStateMachineConfigurerAdapter;
@@ -13,16 +15,20 @@ import org.springframework.statemachine.config.builders.StateMachineConfiguratio
 import org.springframework.statemachine.config.builders.StateMachineStateConfigurer;
 import org.springframework.statemachine.config.builders.StateMachineTransitionConfigurer;
 import org.springframework.statemachine.guard.Guard;
-import org.springframework.statemachine.listener.StateMachineListener;
-import org.springframework.statemachine.listener.StateMachineListenerAdapter;
-import org.springframework.statemachine.state.State;
 
 import java.util.EnumSet;
 
 @Configuration
 @EnableStateMachineFactory
+@Slf4j
 public class StateMachineConfigFactory
 		extends EnumStateMachineConfigurerAdapter<States, Events> {
+
+	@Autowired
+	private ErrorAction errorAction;
+
+	@Autowired
+	private LogListener logListener;
 
 	@Override
 	public void configure(StateMachineConfigurationConfigurer<States, Events> config)
@@ -31,7 +37,7 @@ public class StateMachineConfigFactory
 				.withConfiguration()
 				// 是否自动启动初始状态
 				.autoStartup(true)
-				.listener(listener());
+				.listener(logListener);
 	}
 
 	@Override
@@ -52,7 +58,7 @@ public class StateMachineConfigFactory
 		transitions
 				.withExternal()
 				.source(States.PENDING).target(States.MACHINE_AUDIT).event(Events.MACHINE_AUDIT)
-				.action(new MachineAuditAction(), new ErrorAction())
+				.action(new MachineAuditAction(), errorAction)
 				// 若 guard 的 evaluate 返回 true 才会执行过渡
 				.guard(guard())
 				// 支持 SpEL 表达式
@@ -60,17 +66,17 @@ public class StateMachineConfigFactory
 				.and()
 				.withChoice()
 				.source(States.MACHINE_AUDIT)
-				.first(States.MACHINE_AUDIT_PASSED, new MachineAuditGuard(), new MachineAuditPassedAction(), new ErrorAction())
-				.last(States.MACHINE_AUDIT_REFUSED, new MachineAuditRefusedAction(), new ErrorAction())
+				.first(States.MACHINE_AUDIT_PASSED, new MachineAuditGuard(), new MachineAuditPassedAction(), errorAction)
+				.last(States.MACHINE_AUDIT_REFUSED, new MachineAuditRefusedAction(), errorAction)
 				.and()
 				.withExternal()
 				.source(States.MACHINE_AUDIT_PASSED).target(States.MANUAL_AUDIT).event(Events.MANUAL_AUDIT)
-				.action(new ManualAuditAction(), new ErrorAction())
+				.action(new ManualAuditAction(), errorAction)
 				.and()
 				.withChoice()
 				.source(States.MANUAL_AUDIT)
-				.first(States.MANUAL_AUDIT_PASSED, new ManualAuditGuard(), new ManualAuditPassedAction(), new ErrorAction())
-				.last(States.MANUAL_AUDIT_REFUSED, new ManualAuditRefusedAction(), new ErrorAction())
+				.first(States.MANUAL_AUDIT_PASSED, new ManualAuditGuard(), new ManualAuditPassedAction(), errorAction)
+				.last(States.MANUAL_AUDIT_REFUSED, new ManualAuditRefusedAction(), errorAction)
 				.and()
 				.withExternal()
 				.source(States.MANUAL_AUDIT_PASSED).target(States.UP).event(Events.UP)
@@ -91,18 +97,7 @@ public class StateMachineConfigFactory
 				.source(States.DOWN).target(States.DESTROY).event(Events.DELETE_CONTENT);
 	}
 
-	@Bean
-	public StateMachineListener<States, Events> listener() {
-		return new StateMachineListenerAdapter<States, Events>() {
-
-			@Override
-			public void stateChanged(State<States, Events> from, State<States, Events> to) {
-				System.out.println("State change to " + to.getId());
-			}
-		};
-	}
-
-	@Bean
+//	@Bean
 	public Guard<States, Events> guard() {
 		return (context) -> true;
 	}
