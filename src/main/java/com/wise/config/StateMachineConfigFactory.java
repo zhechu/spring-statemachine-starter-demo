@@ -8,8 +8,6 @@ import com.wise.guard.ManualAuditGuard;
 import com.wise.listener.LogListener;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.statemachine.config.EnableStateMachineFactory;
 import org.springframework.statemachine.config.EnumStateMachineConfigurerAdapter;
 import org.springframework.statemachine.config.builders.StateMachineConfigurationConfigurer;
 import org.springframework.statemachine.config.builders.StateMachineStateConfigurer;
@@ -18,8 +16,8 @@ import org.springframework.statemachine.guard.Guard;
 
 import java.util.EnumSet;
 
-@Configuration
-@EnableStateMachineFactory
+//@Configuration
+//@EnableStateMachineFactory
 @Slf4j
 public class StateMachineConfigFactory
 		extends EnumStateMachineConfigurerAdapter<States, Events> {
