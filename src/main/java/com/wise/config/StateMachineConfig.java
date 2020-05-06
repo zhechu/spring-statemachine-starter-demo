@@ -94,6 +94,7 @@ public class StateMachineConfig
     @Bean
     public StateMachineListener<States, Events> listener() {
         return new StateMachineListenerAdapter<States, Events>() {
+
             @Override
             public void stateChanged(State<States, Events> from, State<States, Events> to) {
                 System.out.println("State change to " + to.getId());

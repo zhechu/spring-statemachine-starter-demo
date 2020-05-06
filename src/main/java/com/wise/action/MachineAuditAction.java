@@ -20,6 +20,8 @@ public class MachineAuditAction implements Action<States, Events> {
 
 	@Override
 	public void execute(StateContext<States, Events> context) {
+	    // TODO 状态检查
+
 		AuditContent auditContent = context.getMessage().getHeaders().get("auditContent", AuditContent.class);
 
 		log.info("机审参数:{}", auditContent);
