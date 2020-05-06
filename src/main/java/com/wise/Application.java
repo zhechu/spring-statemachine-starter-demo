@@ -11,6 +11,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.statemachine.StateMachine;
+import org.springframework.statemachine.config.StateMachineFactory;
 
 @SpringBootApplication
 @Slf4j
@@ -20,11 +21,17 @@ public class Application implements CommandLineRunner {
         SpringApplication.run(Application.class, args);
     }
 
+//    @Autowired
+//    private StateMachine<States, Events> stateMachine;
+
     @Autowired
-    private StateMachine<States, Events> stateMachine;
+    StateMachineFactory<States, Events> factory;
 
     @Override
     public void run(String... args) {
+        StateMachine<States,Events> stateMachine = factory.getStateMachine();
+        stateMachine.start();
+
         // 参数
         AuditContent auditContent = new AuditContent();
         auditContent.setContentId(1L);
@@ -42,6 +49,23 @@ public class Application implements CommandLineRunner {
         }
 
         log.info("机审后状态:{}", stateMachine.getState());
+
+
+        // 另一个状态机
+        StateMachine<States,Events> stateMachine2 = factory.getStateMachine();
+        stateMachine2.start();
+
+        message = MessageBuilder.withPayload(Events.MACHINE_AUDIT)
+                .setHeader("auditContent", auditContent).build();
+        stateMachine2.sendEvent(message);
+
+        // 异常处理
+        if (stateMachine2.getExtendedState().getVariables().containsKey("hasError")) {
+            throw (RuntimeException)stateMachine2.getExtendedState().getVariables().get("error");
+        }
+
+        log.info("动态创建状态机的机审后状态:{}", stateMachine2.getState());
+
 
         message = MessageBuilder.withPayload(Events.MANUAL_AUDIT)
                 .setHeader("auditContent", auditContent).build();

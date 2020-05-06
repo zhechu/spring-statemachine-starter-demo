@@ -6,8 +6,6 @@ import com.wise.enums.States;
 import com.wise.guard.MachineAuditGuard;
 import com.wise.guard.ManualAuditGuard;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.statemachine.config.EnableStateMachine;
 import org.springframework.statemachine.config.EnumStateMachineConfigurerAdapter;
 import org.springframework.statemachine.config.builders.StateMachineConfigurationConfigurer;
 import org.springframework.statemachine.config.builders.StateMachineStateConfigurer;
@@ -19,8 +17,8 @@ import org.springframework.statemachine.state.State;
 
 import java.util.EnumSet;
 
-@Configuration
-@EnableStateMachine
+//@Configuration
+//@EnableStateMachine
 public class StateMachineConfig
         extends EnumStateMachineConfigurerAdapter<States, Events> {
 
