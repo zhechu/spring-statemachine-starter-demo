@@ -12,6 +12,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.statemachine.StateMachine;
+import org.springframework.statemachine.support.StateMachineInterceptorAdapter;
 
 @SpringBootApplication
 @Slf4j
@@ -92,6 +93,16 @@ public class Application implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         StateMachine<States,Events> stateMachine = contentAuditStateMachineBuilder.build("1");
+
+        stateMachine.getStateMachineAccessor()
+                .doWithRegion(function -> function.addStateMachineInterceptor(new StateMachineInterceptorAdapter<States, Events>() {
+                    @Override
+                    public Exception stateMachineError(StateMachine<States, Events> sm, Exception exception) {
+                        log.error("-------------------->异常", exception);
+                        return exception;
+                    }
+                }));
+
         stateMachine.start();
 
         // 参数
