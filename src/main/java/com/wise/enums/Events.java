@@ -14,6 +14,9 @@ public enum Events {
     /** 下架 */
     DOWN(),
 
+    /** 恢复上架 */
+    RE_UP(),
+
     /** 删除内容 */
     DELETE_CONTENT(),
     ;
