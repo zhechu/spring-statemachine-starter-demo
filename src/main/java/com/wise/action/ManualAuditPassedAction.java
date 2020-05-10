@@ -26,7 +26,7 @@ public class ManualAuditPassedAction implements Action<States, Events> {
 		log.info("人工审核通过参数:{}", auditContent);
 
 		// 机审状态持久化
-		auditContent.setStateCode(context.getTarget().getId().getCode());
+		auditContent.setStateCode(States.MANUAL_AUDIT_PASSED.getCode());
 
 		log.info("人工审核通过持久化状态:{}", auditContent);
 

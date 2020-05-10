@@ -26,7 +26,7 @@ public class ManualAuditRefusedAction implements Action<States, Events> {
 		log.info("人工审核拒绝参数:{}", auditContent);
 
 		// 机审状态持久化
-		auditContent.setStateCode(context.getTarget().getId().getCode());
+		auditContent.setStateCode(States.MANUAL_AUDIT_REFUSED.getCode());
 
 		log.info("人工审核拒绝持久化状态:{}", auditContent);
 

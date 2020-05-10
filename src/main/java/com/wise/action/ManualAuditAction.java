@@ -34,7 +34,7 @@ public class ManualAuditAction implements Action<States, Events> {
 		}
 
 		// 机审状态持久化
-		auditContent.setStateCode(context.getTarget().getId().getCode());
+		auditContent.setStateCode(States.MANUAL_AUDIT.getCode());
 
 		log.info("人工审核持久化状态:{}", auditContent);
 

@@ -6,7 +6,6 @@ import com.wise.enums.States;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.statemachine.StateContext;
 import org.springframework.statemachine.action.Action;
-import org.springframework.statemachine.state.State;
 import org.springframework.stereotype.Component;
 
 /**
@@ -27,8 +26,7 @@ public class MachineAuditRefusedAction implements Action<States, Events> {
 		log.info("机审拒绝参数:{}", auditContent);
 
 		// 机审状态持久化
-		State<States, Events> target = context.getTarget();
-		auditContent.setStateCode(target.getId().getCode());
+		auditContent.setStateCode(States.MACHINE_AUDIT_REFUSED.getCode());
 
 		log.info("机审拒绝持久化状态:{}", auditContent);
 

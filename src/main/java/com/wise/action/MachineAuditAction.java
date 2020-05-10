@@ -34,7 +34,7 @@ public class MachineAuditAction implements Action<States, Events> {
 		}
 
 		// 机审状态持久化
-		auditContent.setStateCode(context.getTarget().getId().getCode());
+		auditContent.setStateCode(States.MACHINE_AUDIT.getCode());
 
 		log.info("机审持久化状态:{}", auditContent);
 

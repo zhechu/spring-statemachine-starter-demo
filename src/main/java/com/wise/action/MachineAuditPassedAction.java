@@ -26,7 +26,7 @@ public class MachineAuditPassedAction implements Action<States, Events> {
 		log.info("机审通过参数:{}", auditContent);
 
 		// 机审状态持久化
-		auditContent.setStateCode(context.getTarget().getId().getCode());
+		auditContent.setStateCode(States.MACHINE_AUDIT_PASSED.getCode());
 
 		log.info("机审通过持久化状态:{}", auditContent);
 
