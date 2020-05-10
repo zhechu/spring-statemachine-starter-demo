@@ -1,5 +1,7 @@
 package com.wise.enums;
 
+import lombok.Getter;
+
 public enum States {
 
     PENDING(1, "待审核"),
@@ -16,12 +18,32 @@ public enum States {
     DESTROY(10, "销毁"),
     ;
 
-    private Integer value;
+    @Getter
+    private Integer code;
+
     private String name;
 
-    States(Integer value, String name) {
-        this.value = value;
+    States(Integer code, String name) {
+        this.code = code;
         this.name = name;
+    }
+
+    /**
+     * 根据编码获取状态枚举
+     *
+     * @param code
+     * @return com.wise.enums.States
+     * @author lingyuwang
+     * @date 2020-05-10 11:21
+     * @since 1.0.9
+     */
+    public static States getByCode(Integer code){
+        for (States s : States.values()) {
+            if(s.code.equals(code)){
+                return s;
+            }
+        }
+        return null;
     }
 
 }

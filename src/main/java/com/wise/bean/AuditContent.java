@@ -24,4 +24,7 @@ public class AuditContent {
     /** 人工审核结果 */
     private Boolean manualAuditResult;
 
+    /** 状态编码 */
+    private Integer stateCode;
+
 }

@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.statemachine.StateContext;
 import org.springframework.statemachine.action.Action;
+import org.springframework.stereotype.Component;
 
 /**
  * 人工审核处理
@@ -15,6 +16,7 @@ import org.springframework.statemachine.action.Action;
  * @date 2020-05-04 0:01
  * @since 1.0.9
  */
+@Component
 @Slf4j
 public class ManualAuditAction implements Action<States, Events> {
 
@@ -30,6 +32,13 @@ public class ManualAuditAction implements Action<States, Events> {
 		} else {
 			auditContent.setManualAuditResult(true);
 		}
+
+		// 机审状态持久化
+		auditContent.setStateCode(context.getTarget().getId().getCode());
+
+		log.info("人工审核持久化状态:{}", auditContent);
+
+		// TODO 落库
 	}
 
 }

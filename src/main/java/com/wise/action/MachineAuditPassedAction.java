@@ -6,6 +6,7 @@ import com.wise.enums.States;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.statemachine.StateContext;
 import org.springframework.statemachine.action.Action;
+import org.springframework.stereotype.Component;
 
 /**
  * 机审通过后处理
@@ -14,6 +15,7 @@ import org.springframework.statemachine.action.Action;
  * @date 2020-05-04 0:01
  * @since 1.0.9
  */
+@Component
 @Slf4j
 public class MachineAuditPassedAction implements Action<States, Events> {
 
@@ -22,6 +24,13 @@ public class MachineAuditPassedAction implements Action<States, Events> {
 		AuditContent auditContent = context.getMessage().getHeaders().get("auditContent", AuditContent.class);
 
 		log.info("机审通过参数:{}", auditContent);
+
+		// 机审状态持久化
+		auditContent.setStateCode(context.getTarget().getId().getCode());
+
+		log.info("机审通过持久化状态:{}", auditContent);
+
+		// TODO 落库
 	}
 
 }

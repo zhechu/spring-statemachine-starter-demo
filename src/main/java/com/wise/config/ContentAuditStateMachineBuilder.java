@@ -11,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.statemachine.StateMachine;
 import org.springframework.statemachine.config.StateMachineBuilder;
-import org.springframework.statemachine.guard.Guard;
 import org.springframework.stereotype.Component;
 
 import java.util.EnumSet;
@@ -27,16 +26,37 @@ public class ContentAuditStateMachineBuilder {
 	private ErrorAction errorAction;
 
 	@Autowired
+	private MachineAuditPassedAction machineAuditPassedAction;
+
+	@Autowired
+	private MachineAuditRefusedAction machineAuditRefusedAction;
+
+	@Autowired
+	private ManualAuditAction manualAuditAction;
+
+	@Autowired
+	private ManualAuditPassedAction manualAuditPassedAction;
+
+	@Autowired
+	private ManualAuditRefusedAction manualAuditRefusedAction;
+
+	@Autowired
 	private LogListener logListener;
 
-	public StateMachine<States, Events> build(String machineId) throws Exception {
+	@Autowired
+	private MachineAuditGuard machineAuditGuard;
+
+	@Autowired
+	private ManualAuditGuard manualAuditGuard;
+
+	public static final String MACHINE_ID = "content_audit";
+
+	public StateMachine<States, Events> build() throws Exception {
 		StateMachineBuilder.Builder<States, Events> builder = StateMachineBuilder.builder();
 
 		builder.configureConfiguration()
 				.withConfiguration()
-				.machineId(machineId)
-				// 是否自动启动初始状态
-				.autoStartup(true)
+				.machineId(MACHINE_ID)
 				.listener(logListener);
 
 		builder.configureStates()
@@ -51,24 +71,20 @@ public class ContentAuditStateMachineBuilder {
 				.withExternal()
 					.source(States.PENDING).target(States.MACHINE_AUDIT).event(Events.MACHINE_AUDIT)
 					.action(machineAuditAction, errorAction)
-					// 若 guard 的 evaluate 返回 true 才会执行过渡
-					.guard(guard())
-					// 支持 SpEL 表达式
-					// .guardExpression("true")
 					.and()
 				.withChoice()
 					.source(States.MACHINE_AUDIT)
-					.first(States.MACHINE_AUDIT_PASSED, new MachineAuditGuard(), new MachineAuditPassedAction(), errorAction)
-					.last(States.MACHINE_AUDIT_REFUSED, new MachineAuditRefusedAction(), errorAction)
+					.first(States.MACHINE_AUDIT_PASSED, machineAuditGuard, machineAuditPassedAction, errorAction)
+					.last(States.MACHINE_AUDIT_REFUSED, machineAuditRefusedAction, errorAction)
 					.and()
 				.withExternal()
 					.source(States.MACHINE_AUDIT_PASSED).target(States.MANUAL_AUDIT).event(Events.MANUAL_AUDIT)
-					.action(new ManualAuditAction(), errorAction)
+					.action(manualAuditAction, errorAction)
 					.and()
 				.withChoice()
 					.source(States.MANUAL_AUDIT)
-					.first(States.MANUAL_AUDIT_PASSED, new ManualAuditGuard(), new ManualAuditPassedAction(), errorAction)
-					.last(States.MANUAL_AUDIT_REFUSED, new ManualAuditRefusedAction(), errorAction)
+					.first(States.MANUAL_AUDIT_PASSED, manualAuditGuard, manualAuditPassedAction, errorAction)
+					.last(States.MANUAL_AUDIT_REFUSED, manualAuditRefusedAction, errorAction)
 					.and()
 				.withExternal()
 					.source(States.MANUAL_AUDIT_PASSED).target(States.UP).event(Events.UP)
@@ -89,11 +105,6 @@ public class ContentAuditStateMachineBuilder {
 					.source(States.DOWN).target(States.DESTROY).event(Events.DELETE_CONTENT);
 
 		return builder.build();
-	}
-
-//	@Bean
-	public Guard<States, Events> guard() {
-		return (context) -> true;
 	}
 
 }

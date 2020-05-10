@@ -9,8 +9,6 @@ import org.springframework.statemachine.StateContext;
 import org.springframework.statemachine.action.Action;
 import org.springframework.stereotype.Component;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 /**
  * 机审处理
  *
@@ -22,12 +20,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Slf4j
 public class MachineAuditAction implements Action<States, Events> {
 
-	private AtomicInteger atomicInteger = new AtomicInteger(0);
-
 	@Override
 	public void execute(StateContext<States, Events> context) {
-	    // TODO 状态检查
-
 		AuditContent auditContent = context.getMessage().getHeaders().get("auditContent", AuditContent.class);
 
 		log.info("机审参数:{}", auditContent);
@@ -39,13 +33,12 @@ public class MachineAuditAction implements Action<States, Events> {
 			auditContent.setMachineAuditResult(true);
 		}
 
-		try {
-			Thread.sleep(3000);
-		} catch (InterruptedException e) {}
+		// 机审状态持久化
+		auditContent.setStateCode(context.getTarget().getId().getCode());
 
-		if (atomicInteger.getAndIncrement() % 2 == 0) {
-			throw new RuntimeException("测试运行时异常");
-		}
+		log.info("机审持久化状态:{}", auditContent);
+
+		// TODO 落库
 	}
 
 }
